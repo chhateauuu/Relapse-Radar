@@ -1,0 +1,19 @@
+# Relapse Radar — Python dependencies (brain, simulator, api, llm)
+# Web (P4/P5) deps live in web/package.json.
+
+# Brain (P1 + P2)
+pandas
+numpy
+scikit-learn
+lightgbm
+ruptures
+shap
+matplotlib
+
+# API + escalation (P3)
+fastapi
+uvicorn[standard]
+twilio
+
+# LLM (P3) — pick one; on-device Ollama for the privacy story in prod
+openai

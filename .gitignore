@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Node / web
+node_modules/
+dist/
+build/
+.vite/
+.next/
+
+# Env / secrets — never commit keys or Twilio creds
+.env
+.env.*
+*.local
+
+# Models / large artifacts (commit small charts, not big binaries)
+brain/models/*.pkl
+brain/models/*.joblib
+*.ckpt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/

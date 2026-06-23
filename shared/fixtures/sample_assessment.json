@@ -1,0 +1,13 @@
+{
+  "user_id": "maya",
+  "day": 70,
+  "risk": 0.81,
+  "state": "RED",
+  "drivers": [
+    { "feature": "sleep_hours", "z": -2.3, "direction": "down" },
+    { "feature": "dwell_flagged_min", "z": 4.0, "direction": "up" },
+    { "feature": "outgoing_msgs", "z": -2.4, "direction": "down" }
+  ],
+  "changepoint": { "active": true, "started_day": 67 },
+  "explanation": null
+}

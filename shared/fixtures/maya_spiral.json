@@ -1,0 +1,9 @@
+[
+  {"user_id":"maya","day":64,"date":"2026-06-20","features":{"sleep_hours":6.6,"late_night_min":20,"screen_time_min":240,"unlocks":95,"outgoing_msgs":12,"unique_contacts":4,"location_entropy":1.1,"time_at_home_pct":0.62,"dwell_flagged_min":0,"steps":4200},"label":1},
+  {"user_id":"maya","day":65,"date":"2026-06-21","features":{"sleep_hours":6.0,"late_night_min":38,"screen_time_min":270,"unlocks":108,"outgoing_msgs":9,"unique_contacts":3,"location_entropy":0.9,"time_at_home_pct":0.70,"dwell_flagged_min":4,"steps":3600},"label":1},
+  {"user_id":"maya","day":66,"date":"2026-06-22","features":{"sleep_hours":5.4,"late_night_min":55,"screen_time_min":300,"unlocks":120,"outgoing_msgs":7,"unique_contacts":2,"location_entropy":0.7,"time_at_home_pct":0.78,"dwell_flagged_min":8,"steps":3000},"label":1},
+  {"user_id":"maya","day":67,"date":"2026-06-23","features":{"sleep_hours":5.0,"late_night_min":68,"screen_time_min":320,"unlocks":135,"outgoing_msgs":5,"unique_contacts":2,"location_entropy":0.55,"time_at_home_pct":0.82,"dwell_flagged_min":11,"steps":2500},"label":1},
+  {"user_id":"maya","day":68,"date":"2026-06-24","features":{"sleep_hours":4.6,"late_night_min":80,"screen_time_min":340,"unlocks":150,"outgoing_msgs":4,"unique_contacts":1,"location_entropy":0.4,"time_at_home_pct":0.86,"dwell_flagged_min":15,"steps":2100},"label":1},
+  {"user_id":"maya","day":69,"date":"2026-06-25","features":{"sleep_hours":4.3,"late_night_min":88,"screen_time_min":352,"unlocks":158,"outgoing_msgs":3,"unique_contacts":1,"location_entropy":0.35,"time_at_home_pct":0.88,"dwell_flagged_min":19,"steps":1950},"label":1},
+  {"user_id":"maya","day":70,"date":"2026-06-26","features":{"sleep_hours":4.1,"late_night_min":95,"screen_time_min":360,"unlocks":165,"outgoing_msgs":3,"unique_contacts":1,"location_entropy":0.30,"time_at_home_pct":0.90,"dwell_flagged_min":22,"steps":1800},"label":1}
+]
