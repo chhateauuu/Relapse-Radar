@@ -11,6 +11,6 @@ See ../../shared/contracts.md for the exact RiskAssessment shape.
 from __future__ import annotations
 
 from .detect import detect, state_for
-from .drivers import drivers
+from .drivers import drivers, shap_drivers
 
-__all__ = ["detect", "state_for", "drivers"]
+__all__ = ["detect", "state_for", "drivers", "shap_drivers"]

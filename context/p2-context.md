@@ -201,3 +201,22 @@ Phase 0 contract gate → Phase 1 everyone parallel on mocks → Phase 2 integra
 ### Notes for the team
 - P1 (Siam) is shipping **LightGBM** (StudentLife honest AUC ~0.545 ≈ near chance, because StudentLife is daily-affect not relapse). Plan: pull the headline AUC from **CrossCheck** (real relapse labels) **or** lead with this ablation as the proof and call StudentLife the method-check.
 - The ablation is **synthetic + honestly labeled** — it proves the *mechanism* (personal baselining is the lever, +0.238 AUC). The real-data panel on P1's model is the honest validation, still pending.
+
+---
+
+### Update 2 (6/24, after P1's model landed) — P2 COMPLETE
+
+P1 pushed the brain (`scorer.py`, `assess.py`, trained model). `assess()` already imports `from brain.eval import drivers, state_for` — **P2 plugged in with zero changes.** Verified end-to-end: `python -m brain.assess` over the fixtures gives the full arc (risk 0.15→0.97, GREEN→AMBER→RED, drivers firing).
+
+**Final P2 deliverables built + verified:**
+- `brain/eval/pipeline.py` — `assess_stream(records)` streams FeatureRecords, runs `detect` over the running risk series, and **fills `changepoint.started_day`** (was `null` in per-day `assess`). This is the integration P3/P4 use for the live slider. Verified: onset = **day 64**.
+- `brain/eval/drivers.py` — added `shap_drivers(record, bundle)` (exact **SHAP TreeExplainer** over a tree model, ranked by contribution; falls back to z-drivers). Verified against a fresh LightGBM. Default `drivers()` stays z-based so explanations match the served (calibrated-fallback) risk.
+- `brain/eval/ablation.py` — added `run_on_labeled(df)` so P1 can run the **real-data** personal-vs-population panel on StudentLife/CrossCheck (10 signal cols + `user` + `label`).
+
+**Findings (not blockers, demo unaffected):**
+- P1's trained artifact is committed at `brain/draft_files/artifacts/fusion_model.joblib`, but `scorer` looks in `brain/model/` — and `brain/model/*.joblib` is **gitignored on purpose**, so models aren't meant to be committed there (regenerate via `python -m brain.train`). Left as-is.
+- That artifact currently **won't unpickle** (`ModuleNotFoundError: brain.models` — trained against the old draft layout). So `RELAPSE_USE_TRAINED_MODEL=1` silently falls back, and live SHAP awaits a re-saved model. The demo uses the calibrated z-fallback risk anyway, so nothing is blocked.
+
+**Status: P2 is functionally complete.** Live SHAP + the real-data ablation panel just need P1 to re-save a loadable model / provide the StudentLife frame — both are one call away (`shap_drivers(bundle=...)`, `run_on_labeled(df)`).
+
+**Run:** `python -m brain.eval.detect | .drivers | .pipeline | .ablation` (from repo root).

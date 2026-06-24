@@ -136,6 +136,32 @@ def run_ablation(seed: int = 42) -> dict:
     }
 
 
+def run_on_labeled(df: pd.DataFrame, seed: int = 42) -> dict:
+    """Same personal-vs-population comparison on a REAL labeled dataframe.   [P1 hook]
+
+    The honest real-data panel. `df` must have the 10 `SIGNALS` columns plus
+    `user` and `label` (0/1). P1: load StudentLife/CrossCheck user-days into that
+    shape and call this — you get the identical two-bar AUC comparison (and can
+    feed the result straight into `plot`). Personalization uses each user's own
+    healthy-day median/IQR, so it works the same on real data.
+    """
+    missing = [c for c in (*SIGNALS, "user", "label") if c not in df.columns]
+    if missing:
+        raise ValueError(f"dataframe is missing required columns: {missing}")
+    y = df["label"].to_numpy()
+    groups = df["user"].to_numpy()
+    auc_pop = _oof_auc(df[SIGNALS].to_numpy(), y, groups, seed)
+    auc_per = _oof_auc(personal_z(df)[SIGNALS].to_numpy(), y, groups, seed)
+    return {
+        "population": auc_pop,
+        "personal": auc_per,
+        "lift": auc_per - auc_pop,
+        "n_users": int(df["user"].nunique()),
+        "n_days": int(len(df)),
+        "positive_rate": float(y.mean()),
+    }
+
+
 def plot(result: dict, path: Path) -> None:
     import matplotlib
     matplotlib.use("Agg")

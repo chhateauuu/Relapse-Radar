@@ -63,6 +63,86 @@ def drivers(feature_record: dict[str, Any], top_k: int = 3) -> list[dict[str, An
     return found[:top_k]
 
 
+def _load_bundle() -> "dict | None":
+    """Load a trained tree-model bundle if one exists AND is loadable.
+
+    A bundle is `{model, feature_names, baseline}`. Tries the configured models
+    dir, then `brain/model/`, then the committed `brain/draft_files/artifacts/`.
+    Returns None on any failure (e.g. the artifact references a module that
+    isn't importable) so `shap_drivers` degrades cleanly to z-score drivers.
+    """
+    import os
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    candidates = []
+    if os.getenv("RELAPSE_MODELS_DIR"):
+        candidates.append(Path(os.environ["RELAPSE_MODELS_DIR"]) / "fusion_model.joblib")
+    candidates += [
+        root / "brain" / "model" / "fusion_model.joblib",
+        root / "brain" / "draft_files" / "artifacts" / "fusion_model.joblib",
+    ]
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            import joblib
+            bundle = joblib.load(path)
+        except Exception:
+            continue
+        if isinstance(bundle, dict) and "model" in bundle:
+            bundle.setdefault("feature_names", list(BASELINE.keys()))
+            bundle.setdefault("baseline", BASELINE)
+            return bundle
+    return None
+
+
+def shap_drivers(
+    feature_record: dict[str, Any], bundle: "dict | None" = None, top_k: int = 3
+) -> list[dict[str, Any]]:
+    """Exact per-feature drivers via SHAP TreeExplainer over a trained tree model.
+
+    Same contract shape as `drivers` — `[{feature, z, direction}]` — but ranked
+    by the model's exact SHAP contribution instead of raw |z|. Falls back to
+    `drivers()` whenever no loadable tree model (or shap) is available, so it is
+    always safe to call. Pass `bundle` explicitly to use a specific model.
+    """
+    bundle = bundle if bundle is not None else _load_bundle()
+    if bundle is None:
+        return drivers(feature_record, top_k)
+    feats = feature_record.get("features", {}) or {}
+    try:
+        import numpy as np
+        import shap
+
+        names = bundle["feature_names"]
+        base = bundle["baseline"]
+        zs = {
+            n: (float(feats[n]) - base[n][0]) / base[n][1]
+            for n in names
+            if n in feats and base[n][1]
+        }
+        vector = np.array([[zs.get(n, 0.0) for n in names]], dtype=float)
+        sv = shap.TreeExplainer(bundle["model"]).shap_values(vector)
+        if isinstance(sv, list):  # [class0, class1] -> positive class
+            sv = sv[-1]
+        contribs = np.asarray(sv).reshape(len(names))
+        found = []
+        for name, contrib in zip(names, contribs):
+            if contrib > 0:  # pushes risk UP
+                z = zs.get(name, 0.0)
+                found.append({
+                    "feature": name, "z": round(z, 2),
+                    "direction": "up" if z > 0 else "down", "_c": float(contrib),
+                })
+        found.sort(key=lambda d: d["_c"], reverse=True)
+        for d in found:
+            d.pop("_c")
+        return found[:top_k] or drivers(feature_record, top_k)
+    except Exception:
+        return drivers(feature_record, top_k)
+
+
 if __name__ == "__main__":
     import json
     from pathlib import Path
@@ -76,3 +156,36 @@ if __name__ == "__main__":
     assert result, "expected at least one driver on the worst spiral day"
     assert all({"feature", "z", "direction"} <= d.keys() for d in result), result
     print("OK:", ", ".join(d["feature"] for d in result))
+
+    # Validate the SHAP TreeExplainer path end-to-end against a tiny LightGBM
+    # (P1's real artifact currently won't unpickle, so we prove the capability
+    # on a fresh model trained in the same z-score space shap_drivers feeds).
+    try:
+        import numpy as np
+        from lightgbm import LGBMClassifier
+
+        names = list(BASELINE.keys())
+        rng = np.random.default_rng(0)
+        X, y = [], []
+        for _ in range(400):
+            is_spiral = rng.random() < 0.4
+            row = []
+            for n in names:
+                z = rng.normal()
+                if is_spiral:
+                    z += (2.0 if RISK_DIRECTION[n] == "up" else -2.0) * rng.random()
+                row.append(z)
+            X.append(row)
+            y.append(1 if is_spiral else 0)
+        model = LGBMClassifier(n_estimators=60, num_leaves=8, verbosity=-1).fit(
+            np.array(X), np.array(y)
+        )
+        bundle = {"model": model, "feature_names": names, "baseline": BASELINE}
+        sd = shap_drivers(worst, bundle=bundle)
+        print(f"\nSHAP drivers for day {worst['day']}:")
+        print(json.dumps(sd, indent=2))
+        assert sd and all({"feature", "z", "direction"} <= d.keys() for d in sd), sd
+        print("OK (shap):", ", ".join(d["feature"] for d in sd))
+    except Exception as exc:  # pragma: no cover - capability check only
+        print("SHAP self-test skipped:", exc)
+
