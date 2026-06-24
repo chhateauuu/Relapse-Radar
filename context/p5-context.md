@@ -4,6 +4,8 @@
 
 > **Your one job:** build the catch-plan/onboarding flow ("mark your risky places, choose your person, write your message"), keep `shared/` the single source of truth, and wire the whole app together so it feels finished.
 
+> **✅ Status (P5 slice):** the **catch-plan onboarding + editor is built, verified end-to-end, and merged to `main`** (`web/`). Consent-first wizard (welcome → places → person → message → thresholds → review) writes a schema-valid `CatchPlan`, plus a full editor with **one-tap revoke** (pause/resume neutralizes the plan within the frozen contract; delete clears local + API). Wired to `GET/PUT /plan/{user_id}` with a localStorage/fixture fallback so it runs offline ("live API" vs "offline demo" badge). **Remaining:** the Phase-2 integration pass (waits on P1–P4 existing) and the whole-app polish/dry-runs. `shared/` stays frozen and guarded — no schema drift.
+
 This file is **self-contained**: you (and your coding agent) should be able to build your whole slice from just this file. Full team doc lives at `docs/Relapse-Radar-Context.md` if you want the deep background.
 
 ---
@@ -24,7 +26,7 @@ Why it can win: the flagship attempt (Mindstrong, ~$160M) died because it sent a
 
 You build, end to end:
 
-1. **The catch-plan editor + onboarding** (`web/`) — a short, warm flow that writes a `CatchPlan`:
+1. **The catch-plan editor + onboarding** (`web/`) — ✅ **done** — a short, warm flow that writes a `CatchPlan`:
    - **"Mark your risky places"** — add geofences (label + location + radius).
    - **"Choose your person"** — add the circle (sponsor name + contact).
    - **"Write your message"** — the `message_template` the user authors *in their own words* while well.
