@@ -3,8 +3,8 @@ import Button from "../ui/Button";
 import ProgressDots from "../ui/ProgressDots";
 import { validatePlan } from "../../lib/plan";
 import StepWelcome from "./StepWelcome";
-import StepPlaces from "./StepPlaces";
 import StepPerson from "./StepPerson";
+import StepPlaces from "./StepPlaces";
 import StepMessage from "./StepMessage";
 import StepThresholds from "./StepThresholds";
 import StepReview from "./StepReview";
@@ -16,8 +16,8 @@ import StepReview from "./StepReview";
  */
 const STEPS = [
   { Component: StepWelcome, gate: () => [] },
-  { Component: StepPlaces, gate: (p) => (p.require_geofence ? ["geofence"] : []) },
   { Component: StepPerson, gate: () => ["sponsorName", "sponsorContact"] },
+  { Component: StepPlaces, gate: () => [] },
   { Component: StepMessage, gate: () => ["message"] },
   { Component: StepThresholds, gate: () => ["sustainedDays"] },
   { Component: StepReview, gate: () => [] },

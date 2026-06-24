@@ -33,20 +33,12 @@ export default function PlanEditor({
 }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const sponsor = (plan.circle ?? [])[0] ?? {};
-  const place = (plan.geofences ?? [])[0] ?? {};
 
   const patchSponsor = (updates) =>
     patch({
       circle: [
         { name: "", role: "sponsor", contact: "", ...sponsor, ...updates },
         ...(plan.circle ?? []).slice(1),
-      ],
-    });
-  const patchPlace = (updates) =>
-    patch({
-      geofences: [
-        { label: "", lat: 0, lng: 0, radius_m: 200, ...place, ...updates },
-        ...(plan.geofences ?? []).slice(1),
       ],
     });
   const setThreshold = (updates) =>
@@ -102,27 +94,6 @@ export default function PlanEditor({
             />
           </Section>
 
-          <Section title="Risky place">
-            <Field label="Label">
-              <input
-                className={inputClass}
-                value={place.label ?? ""}
-                onChange={(e) => patchPlace({ label: e.target.value })}
-              />
-            </Field>
-            <Field label="Radius (m)">
-              <input
-                type="number"
-                min={50}
-                max={2000}
-                step={50}
-                className={inputClass}
-                value={place.radius_m ?? 200}
-                onChange={(e) => patchPlace({ radius_m: Number(e.target.value) })}
-              />
-            </Field>
-          </Section>
-
           <Section title="When to act">
             <div className="grid grid-cols-2 gap-2">
               {STATE_OPTIONS.map((opt) => (
@@ -156,11 +127,6 @@ export default function PlanEditor({
               label="Nudge me first"
               checked={plan.self_nudge_first}
               onChange={(v) => patch({ self_nudge_first: v })}
-            />
-            <Toggle
-              label="Require I'm at a risky place"
-              checked={plan.require_geofence}
-              onChange={(v) => patch({ require_geofence: v })}
             />
           </Section>
 

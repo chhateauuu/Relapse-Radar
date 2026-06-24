@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { clearPlan, getPlan, putPlan, setPaused as setPausedApi } from "../lib/api";
-import { emptyPlan } from "../lib/plan";
+import { emptyPlan, normalizePlan } from "../lib/plan";
+import { SAMPLE_PLAN } from "../lib/fixtures";
 
 /**
  * Owns the editable CatchPlan: loads it (API or local fallback), exposes a
  * field patcher, and saves it back. `source` tells the UI whether it's talking
  * to the live API or the offline fallback; `paused` reflects the one-tap revoke.
+ *
+ * Seeds with the hardcoded sample plan so both the demo and the plan page show
+ * fully-filled, matching info with no data entry required.
  */
 export function usePlan(userId = "maya") {
-  const [plan, setPlan] = useState(() => emptyPlan(userId));
+  const [plan, setPlan] = useState(() => normalizePlan(SAMPLE_PLAN, userId));
   const [source, setSource] = useState("loading");
   const [paused, setPaused] = useState(false);
   const [saving, setSaving] = useState(false);

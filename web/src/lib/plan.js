@@ -7,7 +7,7 @@
  */
 
 export const STATE_OPTIONS = [
-  { value: "AMBER", label: "Amber — worth a look" },
+  { value: "AMBER", label: "Yellow — your line's off" },
   { value: "RED", label: "Red — reach out" },
 ];
 

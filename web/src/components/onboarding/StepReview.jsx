@@ -13,7 +13,10 @@ function Row({ label, value }) {
 /** Step — read the plan back in plain language before committing. */
 export default function StepReview({ plan }) {
   const sponsor = (plan.circle ?? [])[0] ?? {};
-  const place = (plan.geofences ?? [])[0] ?? {};
+  const places = (plan.geofences ?? []).filter((p) => p.label?.trim());
+  const placeText = places.length
+    ? places.map((p) => p.label).join(", ")
+    : "None selected";
 
   return (
     <div className="flex flex-col gap-5">
@@ -27,7 +30,7 @@ export default function StepReview({ plan }) {
       <div className="rounded-2xl border border-slate-200 bg-white px-4 py-1">
         <Row label="Person" value={`${sponsor.name || "—"}${sponsor.role ? ` · ${sponsor.role}` : ""}`} />
         <Row label="Number" value={sponsor.contact || "—"} />
-        <Row label="Place" value={place.label ? `${place.label} (${place.radius_m}m)` : "—"} />
+        <Row label="Places" value={placeText} />
         <Row label="Reach out at" value={plan.thresholds?.state || "—"} />
         <Row label="Sustained" value={`${plan.thresholds?.sustained_days ?? "—"} day(s)`} />
         <Row label="Nudge me first" value={plan.self_nudge_first ? "Yes" : "No"} />

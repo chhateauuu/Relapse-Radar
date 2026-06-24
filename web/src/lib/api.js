@@ -10,8 +10,8 @@ import { SAMPLE_PLAN } from "./fixtures";
 import { neutralizePlan, normalizePlan } from "./plan";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
-const storageKey = (userId) => `relapse-radar:plan:${userId}`;
-const pausedKey = (userId) => `relapse-radar:paused:${userId}`;
+const storageKey = (userId) => `relapse-radar:plan:v2:${userId}`;
+const pausedKey = (userId) => `relapse-radar:paused:v2:${userId}`;
 
 function readPaused(userId) {
   try {

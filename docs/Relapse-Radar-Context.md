@@ -723,7 +723,7 @@ flowchart LR
 | brain/ data + models + AUC | P1 | not started | |
 | brain/ detection + ablation + simulator/ | P2 | not started | |
 | api/ + llm/ + escalation | P3 | endpoints + rules + Twilio + LLM done (mocks) | all 10 endpoints live; rules engine + self_nudge→notify_circle ladder + simulated/real SMS; swap brain.assess & simulator at integration |
-| web/ shell + your-line + controls + sponsor | P4 | not started | |
+| web/ shell + your-line + controls + sponsor | P4 | demo screen done (mocks) | DemoView: two phones + "your line" chart + GREEN/AMBER/RED + drivers + advance-day slider + on-device & personal-vs-population toggles + sponsor view; offline-first via local assess engine, swaps to /assess/batch + /timeline at integration |
 | web/ plan + onboarding + /shared + integration + polish | P5 | not started | |
 | demo · deck · pitch (§B7) | team | not started | split at M4 |
 

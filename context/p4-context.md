@@ -2,7 +2,7 @@
 
 **Lane: Frontend — the live-demo screen.** You own `web/` (the shell, the "your line" chart, the demo controls, the sponsor view).
 
-> **Your one job:** build the screen the judges watch. Slide the spiral forward → the line climbs → the state flips GREEN→AMBER→RED → the sponsor's phone lights up. This is the emotional money shot.
+> **Your one job:** build the screen the judges watch. Slide the spiral forward → the **model scores each day** → the line climbs → the state flips GREEN→AMBER→RED → the sponsor's phone lights up, while a live **Backend AI Model** panel shows the model think. This is the emotional money shot.
 
 This file is **self-contained**: you (and your coding agent) should be able to build your whole slice from just this file. Full team doc lives at `docs/Relapse-Radar-Context.md` if you want the deep background.
 
@@ -20,39 +20,46 @@ Why it can win: the flagship attempt (Mindstrong, ~$160M) died because it sent a
 
 ---
 
-## 2. The demo you're building (the money shot)
+## 2. The demo you're building (the money shot) — AS BUILT
 
-Two phone screens side by side — **Maya's phone** + **her sponsor's phone** — and a slider labeled **"advance days."**
+**Three panels side by side**, plus a slider labeled **"advance days":**
+**Maya's phone** · **her sponsor's phone** · **the Backend AI Model monitor.**
 
-1. **Green state.** Maya, 67 days sober. "Your line" sits steady inside her normal band. On-device indicator lit.
-2. **Slide forward.** Signals visibly degrade — sleep bar drops, late-night spikes, comms thin out, mobility shrinks. The line climbs to **AMBER**. Contributing signals light up.
-3. **It explains itself** in plain words (from the LLM): *"You've slept under 5 hrs and gone quiet 3 days running — that's been a rough sign for you before."*
-4. **It checks in** (LLM chat): *"Hey — noticing your line's off. HALT check: how are you?"* — Maya doesn't answer.
-5. **She drifts near a flagged place** → state hits **RED + sustained** → her pre-written plan fires.
-6. **The sponsor's phone buzzes** with the message Maya wrote in week 1: *"If you get this, I'm having a hard night near somewhere risky — please call me."*
-7. **Punchline:** *"Nothing left her phone but one text she wrote to herself. No cloud, no doctor, no surveillance."*
+The whole arc is driven by the **real backend model** (FastAPI wrapping `brain.assess`) when it's running, with an offline fallback engine that emits identical shapes so the demo never breaks.
 
-**Two toggles for the technical audience (build these — they're proof):**
-- **Personal vs Population** — flip it: the population model misses Maya or false-alarms; the personal model nails it.
-- **On-device** — show that raw data never transmits; only the risk state + her message.
+1. **Green state.** Maya, ~60 days sober. "Your line" sits steady inside her normal band; the on-device indicator is lit.
+2. **Slide forward.** Each day's `FeatureRecord` is scored by the model. The line climbs; around **day 64–65 it goes AMBER** and an **iOS-style notification** drops onto Maya's phone ("Your line's off").
+3. **It explains itself** in plain words (drivers → a kind, non-clinical sentence).
+4. **Day 66 → RED.** With `sustained_days = 1`, the deterministic catch-plan fires **the same day she goes red**.
+5. **The sponsor's phone lights up** with the message Maya pre-wrote: *"If you get this, I'm having a hard night near somewhere risky — please call me."*
+6. **The Backend AI Model monitor** streams the model's work each day: the `POST /assess` call, z-scores vs her baseline, `fusion → risk`, the change-point, `state =`, and on day 66 the `notify_circle → SMS dispatched` line. A live dot shows whether it's talking to the real API.
+7. **Punchline:** *"Nothing left her phone but one text she wrote to herself."*
+
+**Auto-play pauses** at the key beats — the line first goes AMBER, then the RED day the sponsor is reached. Pressing play after the end restarts the run.
+
+**Two proof toggles:**
+- **Personal vs Population** — population uses generic averages and under-reacts (misses Maya); personal catches it.
+- **On-device** — raw data never transmits; only the risk state + her message.
 
 ---
 
-## 3. Your slice (what done looks like)
+## 3. Your slice — AS BUILT ✅
 
-You build, end to end:
+All under `web/src/components/demo/` + `web/src/lib/`:
 
-1. **The phone-styled shell** — looks like a real app on a projector (phone frame, status bar, clean type). Mobile-first, big and legible from the back of a room.
-2. **The "your line" chart** (Recharts) — the signal/risk value vs the **personal normal band**, with the risk line **climbing** across days. The centerpiece visual.
-3. **The GREEN / AMBER / RED indicator** + a **contributing-signals readout** (which signals are off, driven by `RiskAssessment.drivers`).
-4. **The demo controls** — the **advance-day slider**, the **on-device** toggle, the **personal-vs-population** toggle.
-5. **The sponsor companion view** — the second-phone screen showing the alert: *"Maya asked to be checked on if things looked rough. Now's the time. Call her."*
+1. **Phone shell** — `ui/PhoneFrame.jsx` (status bar, notch), big/legible for a projector.
+2. **"Your line" chart** — `demo/YourLineChart.jsx` (Recharts): the risk line climbing across days, GREEN/AMBER/RED zone bands (thresholds **0.30 / 0.60**, matching the model), and a "drift began" change-point marker.
+3. **State + drivers** — `demo/StateIndicator.jsx` + `demo/SignalReadout.jsx`, driven by `RiskAssessment.state` / `.drivers`.
+4. **iOS notification** — `demo/IOSNotification.jsx`, drops in on the AMBER state.
+5. **Check-in** — `demo/CheckInChat.jsx` (HALT-style nudge).
+6. **Sponsor view** — `demo/SponsorPhone.jsx` (calm until the plan fires, then the alert + Maya's pre-written message + a Call button).
+7. **Backend AI Model monitor** — `demo/ModelMonitor.jsx`: a desktop-monitor panel visualizing the model processing each day (pipeline strip, risk gauge, streaming z-score → fusion → state log, escalation line, live/offline indicator).
+8. **Demo controls** — `demo/DemoControls.jsx`: advance-day slider, play/pause with **milestone pauses + restart**, on-device toggle, personal-vs-population toggle.
+9. **Orchestration + data** — `demo/DemoView.jsx`, `lib/demoData.js` (concatenated fixtures), `lib/assess.js` (offline engine + state/changepoint/timeline helpers), `lib/demoApi.js` (calls the live model, falls back offline).
 
-**Done when:** the full demo runs from the slider and looks clean on a projector — slide the spiral, the line climbs, the state flips, the sponsor screen lights up.
+The **"My plan" tab** (mostly P5) opens to a **prefilled onboarding wizard** matching the demo data; the location step is optional with a real **Leaflet/OpenStreetMap** map (`ui/MiniMap.jsx`).
 
-**Start immediately (no API needed — you're the longest frontend pole, start hour one):** build the entire UI against `shared/fixtures/maya_spiral.json` (an array of `FeatureRecord`s for the spiral) and `shared/fixtures/sample_assessment.json` (a `RiskAssessment`). The slider just indexes into the fixture array.
-
-**You wait for:** nothing to start. At integration you swap fixture reads for live API calls (the shapes are identical, so it's a drop-in).
+**Done:** the full demo runs from the slider, driven by the live model, and looks clean on a projector — the line climbs, the state flips, the sponsor screen lights up, and the model panel shows the work.
 
 ---
 
@@ -103,39 +110,54 @@ You consume two shapes (and read the plan for sponsor context). **Don't change a
 
 ---
 
-## 5. The API you'll call (at integration)
+## 5. The API — WIRED ✅
 
-P3 serves these; until then, mock with fixtures. Shapes are identical, so swapping is a drop-in.
+The backend (FastAPI wrapping the model) runs at **`http://127.0.0.1:8000`** (CORS open). The demo uses:
 
-| Method | Path | Returns | You use it for |
-|---|---|---|---|
-| POST | `/simulate/start` | ok | begin a demo run |
-| POST | `/simulate/step` | `{FeatureRecord, RiskAssessment}` | **the slider** — one step per day |
-| POST | `/assess/batch` | RiskAssessment[] | pre-load the whole spiral for smooth scrubbing |
-| GET | `/timeline/{user_id}` | EscalationEvent[] | the sponsor view / alert timeline |
+| Method | Path | Used for |
+|---|---|---|
+| POST | `/assess/batch` | the whole stream → `RiskAssessment[]` (the model's per-day risk / state / drivers) — **primary path** |
+| GET | `/` | health (drives the live/offline indicator) |
+
+The frontend points at the API via `web/.env` → `VITE_API_BASE=http://127.0.0.1:8000` (explicit `127.0.0.1` avoids the Windows `localhost`→IPv6 issue). If the API is unreachable, `lib/demoApi.js` transparently falls back to the offline engine and the panels show **"offline"**.
+
+The frontend uses the model's **risk + drivers**, then derives **state** (matching the chart bands), the **change-point**, and the **escalation timeline** from the model's risk series — the escalation is a deterministic rule by design (a model never decides to text someone). Other endpoints (`/simulate/*`, `/timeline`, `/escalate`) exist on the backend and can be wired later for a real server-side Twilio send.
 
 ---
 
-## 6. Repo layout & stack
+## 6. Repo layout & stack — AS BUILT
 
 ```
 relapse-radar/
-├── web/                # YOU (shell, chart, controls, sponsor view) + P5 (plan, onboarding, glue)
-├── shared/
-│   ├── contracts.md
-│   └── fixtures/       # build against maya_spiral.json + sample_assessment.json
-└── docs/
+├── api/                 # P3 — FastAPI backend (running on :8000)
+├── brain/               # P1/P2 — the model (brain.assess / scorer)
+├── .venv/               # Python 3.12 venv for the backend (gitignored)
+├── web/
+│   ├── .env             # VITE_API_BASE=http://127.0.0.1:8000
+│   └── src/
+│       ├── App.jsx                    # "Live demo" / "My plan" tabs
+│       ├── components/demo/           # DemoView, MayaPhone, SponsorPhone, ModelMonitor,
+│       │                             # YourLineChart, StateIndicator, SignalReadout,
+│       │                             # CheckInChat, IOSNotification, DemoControls
+│       ├── components/ui/             # PhoneFrame, MiniMap (Leaflet), Button, Field, Toggle…
+│       ├── components/onboarding/ + plan/   # P5 — prefilled wizard + plan editor + PlacesEditor
+│       └── lib/                       # demoData, assess, demoApi, api, plan, fixtures
+└── shared/fixtures/     # maya_healthy.json, maya_spiral.json, sample_plan.json, …
 ```
 
 | Thing | Choice |
 |---|---|
-| Stack | **Node 20 · React + Vite + Tailwind** |
-| Charts | **Recharts** (line / risk viz) |
-| Naming | JSON keys are `snake_case` (from the API); React props your call |
+| Stack | **Node 20 · React + Vite + Tailwind v4** |
+| Charts | **Recharts** ("your line") |
+| Map | **Leaflet + OpenStreetMap** (flagged-places map) |
+| Backend | **Python 3.12 venv · FastAPI · uvicorn** (model = `brain.assess`) |
+| Naming | JSON keys `snake_case` (from the API) |
 | Commits | prefix `web:` |
-| Run | `npm run dev` (from `web/`) |
 
-**You share `web/` with P5** — agree on component boundaries early. Rough split: **you** = demo screen (shell, chart, controls, sponsor view); **P5** = plan/onboarding editor + integration glue + polish. Keep components modular so you don't collide.
+**Run it:**
+- **Backend** (repo root): `.\.venv\Scripts\python.exe -m uvicorn api.main:app --port 8000`
+- **Frontend** (`web/`): `npm run dev` → http://localhost:5174/
+- Node + Python were installed via winget; **new** terminals have them on PATH.
 
 ---
 
@@ -158,12 +180,13 @@ You're one of the **two longest poles** (with P1) — start hour one against fix
 
 ---
 
-## 9. Gotchas — read before you build ⚠️
+## 9. Gotchas (current) ⚠️
 
-- **`web/` is just a README — there is no app yet.** Before `npm run dev` works, the Vite + React + Tailwind project must be scaffolded. **Coordinate with P5: exactly ONE of you runs `npm create vite@latest` + adds Tailwind, commits it, then you both build inside it.** If you both scaffold, you collide.
-- **Your demo data stream = `maya_healthy.json` + `maya_spiral.json` concatenated** (days 60→70, healthy first). There is **no** single combined fixture. `sample_assessment.json` is one example assessment, not the per-day series — don't drive the slider from it.
-- **Read everything from each RiskAssessment dynamically — never hardcode.** The sample shows `started_day: 67`, but the spiral data starts at **day 64**; if you hardcode, the climbing line and the "started N days ago" marker won't line up. Whatever the assessment says is what you render.
-- **At integration the API is at `http://localhost:8000`** with CORS enabled by P3. If a `fetch` fails with a CORS error, that's P3's middleware to fix, not your bug.
+- **Use `127.0.0.1`, not `localhost`, for the API** (pinned in `web/.env`). On Windows `localhost` can resolve to IPv6 `::1` while uvicorn binds IPv4 → fetches fail.
+- **The backend must be running** for the live model + the monitor's "live" dot. If it's down, everything still works via the offline engine (panels show "offline").
+- **Read everything from each RiskAssessment dynamically — never hardcode days.** The model's arc: GREEN → AMBER (day 64–65) → RED + SMS (day 66). State thresholds are **0.30 / 0.60** to match the model; `sustained_days = 1` so the sponsor text fires the same day she goes red.
+- **`uvicorn[standard]` won't build on this ARM64 box** (needs MSVC); use plain `uvicorn`. The ML libs (lightgbm/shap/ruptures) aren't needed — the scorer is pure-Python and Twilio/LLM are lazily imported.
+- **Restarting:** new terminals must refresh PATH or just open fresh; then run the two commands in §6.
 
 ---
 

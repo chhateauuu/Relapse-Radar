@@ -1,8 +1,8 @@
 {
   "user_id": "maya",
-  "thresholds": { "state": "RED", "sustained_days": 2 },
-  "require_geofence": true,
-  "geofences": [{ "label": "old neighborhood", "lat": 0.0, "lng": 0.0, "radius_m": 200 }],
+  "thresholds": { "state": "RED", "sustained_days": 1 },
+  "require_geofence": false,
+  "geofences": [],
   "self_nudge_first": true,
   "circle": [{ "name": "Dana", "role": "sponsor", "contact": "+15555550123" }],
   "message_template": "If you get this, I'm having a hard night near somewhere risky — please call me."

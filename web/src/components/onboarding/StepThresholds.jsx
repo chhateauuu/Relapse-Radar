@@ -56,13 +56,6 @@ export default function StepThresholds({ plan, patch, errors }) {
         checked={plan.self_nudge_first}
         onChange={(v) => patch({ self_nudge_first: v })}
       />
-
-      <Toggle
-        label="Require I'm at a risky place"
-        hint="only act when location and state both line up"
-        checked={plan.require_geofence}
-        onChange={(v) => patch({ require_geofence: v })}
-      />
     </div>
   );
 }
