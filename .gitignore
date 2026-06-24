@@ -24,6 +24,8 @@ build/
 # Models / large artifacts (commit small charts, not big binaries)
 brain/models/*.pkl
 brain/models/*.joblib
+brain/model/*.pkl
+brain/model/*.joblib
 *.ckpt
 
 # OS / editor

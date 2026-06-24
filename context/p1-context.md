@@ -176,3 +176,36 @@ You are the **critical path**. Concretely:
 - **Mock your dependencies** (use `shared/fixtures/`), integrate early.
 - Keep your status row current in `docs/Relapse-Radar-Context.md` §B10.
 - The honest framing that wins judges: we validate the *method* on the best available labeled behavioral data (depression/schizophrenia relapse); productionizing for addiction needs a recovery-cohort study — that's on the roadmap, not hidden.
+
+---
+
+## 10. Progress log — agent changes (append-only; pull before you start) ⭐
+
+> Team convention: every agent action on the P1 slice is appended here so cross-person tracking is easy. **Pull before you start.** Newest entry at the bottom.
+
+### 2026-06-24 — P1 (Siam) — model trained + saved, paths made configurable
+
+**Status: P1 functionally complete and integration-ready. `assess()` works, honors the frozen contract, and unblocks P3. LightGBM trained + saved.**
+
+**Code changes**
+- `brain/config.py` — `MODELS_DIR` is now configurable via the `RELAPSE_MODELS_DIR` env var and **defaults to `brain/model/`** (singular). Dataset path still overridable via `RELAPSE_DATASET_DIR`.
+- `brain/scorer.py` — `_ARTIFACT` now lazy-loads the trained model from `brain/model/` (respects `RELAPSE_MODELS_DIR`) so training output and serving stay in sync.
+
+**Training run (in venv `C:\custom\Hackathon\.venv`, dataset `C:\custom\Hackathon\dataset\studentlife`)**
+- Loaded **2439 user-days across 46 users** (8/46 positive, 19% positive user-days).
+- Backend: **LightGBM** (`lightgbm.sklearn.LGBMClassifier`) — verified by loading the artifact, not just the log.
+- **GroupKFold AUC: 0.561** — near-chance, expected/honest (StudentLife PHQ-9 = trait depression, not relapse). Headline AUC will come from CrossCheck or P2's ablation.
+- Artifact saved → **`brain/model/fusion_model.joblib`** (422 KB). ROC chart → `brain/notebooks/roc_auc.png`.
+
+**Serving note (important for P2/P3):** `assess()` serves the **calibrated logistic fallback** by default (smooth GREEN→RED demo arc). The trained LightGBM only loads when `RELAPSE_USE_TRAINED_MODEL=1`, because StudentLife labels would flatten the demo. The trained model exists for inspection/SHAP.
+
+**Run commands**
+```powershell
+$env:RELAPSE_DATASET_DIR="C:\custom\Hackathon\dataset\studentlife"
+& "C:\custom\Hackathon\.venv\Scripts\python.exe" -m brain.train     # train + AUC, saves to brain/model/
+& "C:\custom\Hackathon\.venv\Scripts\python.exe" -m brain.assess    # smoke-test on fixtures
+```
+
+**Dependency check for P2 (asked 6/24):**
+- ✅ UNBLOCKED: `detect`/`drivers` already wired into `assess.py`; trained LightGBM object now available at `brain/model/fusion_model.joblib` for the SHAP `TreeExplainer` swap + real-data ablation.
+- ⚠️ STILL OPEN (P1 TODO): a **shared per-user rolling baseline** (`to_zscores(record, history)`, median/IQR, weekday/weekend) so model input + drivers + ablation all z-score identically. Today `scorer.py` only exposes a **population** baseline. A draft exists at `brain/draft_files/brain/models/baseline.py` — not yet promoted into the live `brain/` package. Note: the saved model was trained on **population** z-scores, so SHAP against a personal baseline needs alignment first.

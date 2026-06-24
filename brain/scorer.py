@@ -72,7 +72,9 @@ RISK_DIRECTION: dict[str, str] = {
 _FALLBACK_GAIN = 0.9
 _FALLBACK_PIVOT = 2.0
 
-_ARTIFACT = Path(__file__).resolve().parent / "models" / "fusion_model.joblib"
+_ARTIFACT = Path(
+    os.getenv("RELAPSE_MODELS_DIR", str(Path(__file__).resolve().parent / "model"))
+) / "fusion_model.joblib"
 
 
 def zscores(features: dict[str, Any]) -> dict[str, float]:

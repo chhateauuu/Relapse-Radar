@@ -11,7 +11,8 @@ from pathlib import Path
 
 # --- Paths ---
 REPO_ROOT = Path(__file__).resolve().parent.parent
-MODELS_DIR = REPO_ROOT / "brain" / "models"
+# Where the trained model artifact is saved. Override with RELAPSE_MODELS_DIR.
+MODELS_DIR = Path(os.getenv("RELAPSE_MODELS_DIR", str(REPO_ROOT / "brain" / "model")))
 NOTEBOOKS_DIR = REPO_ROOT / "brain" / "notebooks"
 
 # StudentLife dataset root. Override with RELAPSE_DATASET_DIR if it lives elsewhere.
