@@ -171,3 +171,33 @@ Phase 0 contract gate → Phase 1 everyone parallel on mocks → Phase 2 integra
 - **Mock your dependencies**, integrate early, **freeze before polishing**.
 - Keep your status row current in `docs/Relapse-Radar-Context.md` §B10.
 - The ablation chart is the single most important proof artifact in the whole project — make it clean and legible on a projector.
+
+---
+
+## 10. Progress log — what's built so far (updated 6/24)
+
+**Status: P2's independent scope is DONE and committed. Everything remaining is gated on P1.**
+
+### Built + committed
+| File | What it does | Verified |
+|---|---|---|
+| `brain/eval/detect.py` | change-point + GREEN/AMBER/RED state. ruptures PELT with a dependency-free CUSUM fallback. Fills `changepoint.started_day`. | smoke test: `RED`, drift onset ~day 65 |
+| `brain/eval/drivers.py` | top-3 z-score drivers in contract shape. SHAP-ready (swap `_z` for TreeExplainer when P1's model lands). | smoke test: `late_night_min`, `unlocks`, `sleep_hours` |
+| `brain/eval/__init__.py` | exports `detect`, `drivers`, `state_for` → P1 does `from brain.eval import detect, drivers` | — |
+| `simulator/simulator.py` | tuned: **reproducible (seeded)**, accelerating spiral, integer-clamped counts. `run()` signature unchanged so P3's `/simulate` still imports it. New: `series()` helper, `SPIRAL_TARGET`, `start_day`/`seed` args. | clean healthy(60–63)→spiral(64–70) arc |
+| `brain/eval/ablation.py` + `ablation.png` | **the proof chart.** Synthetic 80-user cohort, honest GroupKFold-by-user AUC. | **population (raw) 0.654 vs personal (per-user z) 0.892, +0.238 lift** |
+
+**Commits:** `d8786d3` (detector + tuned simulator), `fce4898` (ablation + chart). Context briefings: `c3d4c69`.
+
+### Environment (this machine)
+- No system Python existed — installed **Python 3.11.9** at `%LOCALAPPDATA%\Programs\Python\Python311\python.exe` (not on PATH; use the full path or prepend it). All `requirements.txt` deps installed (numpy, ruptures, shap, lightgbm, scikit-learn, matplotlib, fastapi…).
+- **Run from the repo root:** `python -m brain.eval.detect` · `python -m brain.eval.drivers` · `python -m brain.eval.ablation` (writes `ablation.png`).
+
+### Remaining — all blocked on P1
+- **Wire `detect`/`drivers` into `brain/assess.py`** — P1 owns `assess.py` and produces `risk`. Until then the live API line is flat-GREEN unless run with `USE_MOCK_BRAIN=1`.
+- **Swap drivers z-scores → SHAP `TreeExplainer`** — needs P1's trained LightGBM object.
+- **Real-data ablation panel** — needs P1's model + a shared `to_zscores(record, history)` function so model input + drivers + ablation all use the *same* per-user baseline.
+
+### Notes for the team
+- P1 (Siam) is shipping **LightGBM** (StudentLife honest AUC ~0.545 ≈ near chance, because StudentLife is daily-affect not relapse). Plan: pull the headline AUC from **CrossCheck** (real relapse labels) **or** lead with this ablation as the proof and call StudentLife the method-check.
+- The ablation is **synthetic + honestly labeled** — it proves the *mechanism* (personal baselining is the lever, +0.238 AUC). The real-data panel on P1's model is the honest validation, still pending.
