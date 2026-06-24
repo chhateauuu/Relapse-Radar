@@ -34,20 +34,24 @@ The 7 from the contract — `/assess`, `/assess/batch`, `/plan/{user_id}` (GET/P
 
 ### How to run & test
 ```bash
-pip install -r requirements.txt
-# lively spiral demo without waiting on P1/P2:
-USE_MOCK_BRAIN=1 uvicorn api.main:app --reload    # http://127.0.0.1:8000/docs
+pip install -r requirements.txt    # pins numpy<2 + shap<0.46 (brain deps break on numpy 2.x)
+uvicorn api.main:app --reload      # real brain; http://127.0.0.1:8000/docs
+# (optional) force the heuristic mock instead of the real brain:
+USE_MOCK_BRAIN=1 uvicorn api.main:app --reload
 ```
 Copy `.env.example` → `.env` for Twilio/OpenAI creds (both optional; without them SMS is simulated and explanations are composed locally).
 
 ### Decisions made (team-agreed)
-- **No auth / no DB.** Team agreed (2026-06-24) auth won't be part of the demo; backend stays **in-memory + fixtures**, which also keeps the "no cloud data" privacy story clean. If revisited, only `store.py` needs to change.
-- **`USE_MOCK_BRAIN=1`** env toggle forces the heuristic brain for a lively demo before P1/P2 land.
+- **No auth / no DB / no login page.** Team agreed (2026-06-24) auth won't be part of the demo (the team explicitly dropped even a mock login). Backend stays **in-memory + fixtures**, which also keeps the "no cloud data" privacy story clean. If revisited, only `store.py` needs to change.
+- **`USE_MOCK_BRAIN=1`** env toggle forces the heuristic brain (useful before the real brain is wired, or for an exaggerated demo curve).
+- **Dependency pins:** `numpy<2` and `shap<0.46` in `requirements.txt` — the brain's compiled deps (scipy/sklearn/lightgbm/shap) break under numpy 2.x. If your env breaks, re-run `pip install -r requirements.txt`.
 
-### Still open (integration, Phase 2 — see §6)
-- Swap `mock_brain` for the real `brain.assess` (automatic once P1/P2 ship; or unset `USE_MOCK_BRAIN`).
-- Point `synthetic` scenario at P2's tuned simulator.
-- Add real Twilio creds + verify the sponsor's phone for the live-SMS money shot.
+### Integration status (Phase 2) — verified 2026-06-24
+- ✅ **Real `brain.assess` (P1+P2) wired in & verified.** No code change needed — the API imports it automatically. Real curve: GREEN(60-63) → AMBER(64-65) → RED(66+); change-point active from day 64; SHAP drivers populated. Escalation: `self_nudge` day 67 → `notify_circle` to Dana day 68+.
+- ✅ **P2 tuned simulator** integrated via the `synthetic` scenario (67-day healthy→spiral arc).
+- ✅ **LLM explain/checkin** filling `RiskAssessment.explanation` end-to-end.
+- ⏳ **Web → live fetch** (P4/P5): waiting on the frontend to move from fixtures to live API calls.
+- ⏳ **Real Twilio SMS:** needs creds in `.env` + a *verified* sponsor phone (trial accounts only text verified numbers). Until then escalation runs in simulated mode.
 
 ---
 
