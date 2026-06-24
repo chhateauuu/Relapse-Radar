@@ -3,11 +3,11 @@
 
 # Brain (P1 + P2)
 pandas
-numpy
+numpy<2          # shap/lightgbm/scipy in this env are built against numpy 1.x; numpy 2.x breaks them
 scikit-learn
 lightgbm
 ruptures
-shap
+shap<0.46        # 0.46+ requires numpy>=2; pin keeps it compatible with numpy<2
 matplotlib
 
 # API + escalation (P3)
