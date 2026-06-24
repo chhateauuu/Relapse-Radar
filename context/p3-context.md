@@ -8,6 +8,49 @@ This file is **self-contained**: you (and your coding agent) should be able to b
 
 ---
 
+## 0. CURRENT STATE — built & on `main` ✅ (read this first)
+
+> The P3 slice is **already implemented and pushed**. Sections 1–9 below are the original briefing (kept for context); this section is the source of truth for *what exists now*. Any agent taking over should start here.
+
+**All 7 contract endpoints are live, plus 2 extras.** Verified end-to-end: a full `healthy → spiral → self_nudge → notify_circle` run works, with simulated or real SMS.
+
+### Files (all under `api/` + `llm/`)
+| File | Role |
+|---|---|
+| `api/main.py` | FastAPI app — all 10 endpoints, CORS, wires brain + LLM + rules + escalation |
+| `api/rules.py` | **Deterministic rules engine** — `evaluate(plan, history)` → `self_nudge` / `notify_circle`. Two gates: sustained-state + geofence. Pure logic, no ML. |
+| `api/escalation.py` | Twilio SMS (`send_sms`) + `build_event` / `dispatch`. No creds → **simulated** mode (event built, send skipped) so it demos offline. |
+| `api/simulate.py` | Loads demo scenarios from `shared/fixtures/` into a session. Scenarios: `healthy`, `spiral`, `healthy_to_spiral` (default), `synthetic` (streams P2's simulator when ready). |
+| `api/store.py` | **In-memory** state (plain dicts), keyed by `user_id`: plans, history, timeline, sim sessions. All state access is isolated here — swapping to a DB later only touches this file. |
+| `api/mock_brain.py` | Heuristic stand-in for `brain.assess` so the demo is lively before P1/P2 ship. Auto-bypassed once `brain.assess` imports (or force with `USE_MOCK_BRAIN`). |
+| `llm/llm.py` | `explain()` (drivers → kind sentence; OpenAI if `OPENAI_API_KEY`, else composed locally) + `checkin()` (HALT). |
+
+### Endpoints (10)
+The 7 from the contract — `/assess`, `/assess/batch`, `/plan/{user_id}` (GET/PUT), `/simulate/start`, `/simulate/step`, `/escalate`, `/timeline/{user_id}` — **plus** `GET /` (health) and `GET /checkin` (LLM HALT line).
+
+**Non-breaking extras beyond the frozen contract (safe to use):**
+- `/simulate/step` also returns a `rules` block — a dry-run of the rules engine so the frontend can light up the moment escalation is due.
+- `/escalate` accepts `send: false` for a dry run (evaluate, change nothing); returns `{triggered: false, decision}` when conditions aren't met.
+
+### How to run & test
+```bash
+pip install -r requirements.txt
+# lively spiral demo without waiting on P1/P2:
+USE_MOCK_BRAIN=1 uvicorn api.main:app --reload    # http://127.0.0.1:8000/docs
+```
+Copy `.env.example` → `.env` for Twilio/OpenAI creds (both optional; without them SMS is simulated and explanations are composed locally).
+
+### Decisions made (team-agreed)
+- **No auth / no DB.** Team agreed (2026-06-24) auth won't be part of the demo; backend stays **in-memory + fixtures**, which also keeps the "no cloud data" privacy story clean. If revisited, only `store.py` needs to change.
+- **`USE_MOCK_BRAIN=1`** env toggle forces the heuristic brain for a lively demo before P1/P2 land.
+
+### Still open (integration, Phase 2 — see §6)
+- Swap `mock_brain` for the real `brain.assess` (automatic once P1/P2 ship; or unset `USE_MOCK_BRAIN`).
+- Point `synthetic` scenario at P2's tuned simulator.
+- Add real Twilio creds + verify the sponsor's phone for the live-SMS money shot.
+
+---
+
 ## 1. What we're building (the 90-second version)
 
 Relapse Radar is a **privacy-first, on-device early-warning app for people in addiction recovery.** It learns *your* normal phone-behavior rhythm, catches a relapse spiral days early, and — using a plan *you wrote while you were well* — reaches out through the **one person you chose to catch you** (your sponsor), with words you wrote yourself.
