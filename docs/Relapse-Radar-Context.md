@@ -722,7 +722,7 @@ flowchart LR
 |---|---|---|---|
 | brain/ data + models + AUC | P1 | not started | |
 | brain/ detection + ablation + simulator/ | P2 | not started | |
-| api/ + llm/ + escalation | P3 | not started | |
+| api/ + llm/ + escalation | P3 | endpoints + rules + Twilio + LLM done (mocks) | all 10 endpoints live; rules engine + self_nudge→notify_circle ladder + simulated/real SMS; swap brain.assess & simulator at integration |
 | web/ shell + your-line + controls + sponsor | P4 | not started | |
 | web/ plan + onboarding + /shared + integration + polish | P5 | not started | |
 | demo · deck · pitch (§B7) | team | not started | split at M4 |

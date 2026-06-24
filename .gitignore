@@ -15,9 +15,10 @@ build/
 .vite/
 .next/
 
-# Env / secrets — never commit keys or Twilio creds
+# Env / secrets — never commit keys or Twilio creds (but keep .env.example)
 .env
 .env.*
+!.env.example
 *.local
 
 # Models / large artifacts (commit small charts, not big binaries)

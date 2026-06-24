@@ -14,6 +14,7 @@ matplotlib
 fastapi
 uvicorn[standard]
 twilio
+python-dotenv
 
 # LLM (P3) — pick one; on-device Ollama for the privacy story in prod
 openai
