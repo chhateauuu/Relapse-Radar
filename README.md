@@ -2,7 +2,6 @@
 
 Privacy-first early-warning app for people in addiction recovery. It learns your normal phone-behavior rhythm, catches a relapse spiral days early, and — using a plan you wrote while well — reaches out through the person you chose to catch you.
 
-**Full context, pitch, architecture, and per-person build spec:** [`docs/Relapse-Radar-Context.md`](docs/Relapse-Radar-Context.md)
 
 ## Repo layout
 | Folder | What lives here |
