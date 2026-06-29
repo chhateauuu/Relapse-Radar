@@ -5,7 +5,7 @@ Privacy-first early-warning app for people in addiction recovery. It learns your
 
 ## Repo layout
 | Folder | What lives here |
-|---|---|---|
+|---|---|
 | `brain/` | ML: baseline, model, AUC, change-point, SHAP, ablation, `assess()` |
 | `simulator/` | synthetic healthy baseline + injectable relapse spiral |
 | `api/` | FastAPI + catch-plan rules engine + Twilio |
