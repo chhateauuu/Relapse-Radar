@@ -5,16 +5,14 @@ Privacy-first early-warning app for people in addiction recovery. It learns your
 **Full context, pitch, architecture, and per-person build spec:** [`docs/Relapse-Radar-Context.md`](docs/Relapse-Radar-Context.md)
 
 ## Repo layout
-| Folder | Owner | What lives here |
+| Folder | What lives here |
 |---|---|---|
-| `brain/` | P1 + P2 | ML: baseline, model, AUC, change-point, SHAP, ablation, `assess()` |
-| `simulator/` | P2 | synthetic healthy baseline + injectable relapse spiral |
-| `api/` | P3 | FastAPI + catch-plan rules engine + Twilio |
-| `llm/` | P3 | explanation + HALT check-in |
-| `web/` | P4 + P5 | phone UI (demo screen + plan/onboarding) |
-| `shared/` | P5 stewards | **frozen** contracts + sample fixtures (source of truth) |
-| `deck/` | team | demo, slides, ethics, backup video (shared final lap) |
-| `docs/` | — | the context doc |
+| `brain/` | ML: baseline, model, AUC, change-point, SHAP, ablation, `assess()` |
+| `simulator/` | synthetic healthy baseline + injectable relapse spiral |
+| `api/` | FastAPI + catch-plan rules engine + Twilio |
+| `llm/` | explanation + HALT check-in |
+| `web/` | phone UI (demo screen + plan/onboarding) |
+| `shared/` | **frozen** contracts + sample fixtures (source of truth) |
 
 ## The 5-person split
 - **P1 — Brain: data + models** — loaders, personal baseline, LightGBM, AUC, `assess()`.
